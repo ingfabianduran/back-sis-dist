@@ -10,6 +10,10 @@ app.use(express.static(__dirname + "/public"));
 const httpServer = server.listen(3000);
 console.log("Server on http://localhost:3000");
 
-const io = new WebSocketServer(httpServer);
+const io = new WebSocketServer(httpServer, {
+  cors: {
+    origin: "http://127.0.0.1:5173",
+  },
+});
 
 Sockets(io);
