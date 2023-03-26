@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/index.js --exec babel-node --ignore src/public",
+    "dev": "nodemon src/index.js --exec babel-node",
     "build": "babel src -d dist && ncp src/public/index.html dist/public/index.html && ncp src/public/main.css dist/public/main.css",
     "start": "node dist"
   },
@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "mysql": "^2.18.1",
     "ncp": "^2.0.0",
     "socket.io": "^4.1.3",
     "uuid": "^8.3.2"

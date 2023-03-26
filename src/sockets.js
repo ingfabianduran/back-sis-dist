@@ -1,41 +1,49 @@
-import { v4 as uuid } from "uuid";
+import mysql from "mysql";
 
-let notes = [];
+const conn = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "sis_dist",
+});
+let ciudades = [];
+
+conn.connect(function (err) {
+  if (err) throw err;
+  conn.query("SELECT * FROM ciudades", function (err, result, fields) {
+    if (err) throw err;
+    ciudades = result;
+  });
+});
 
 export default (io) => {
   io.on("connection", (socket) => {
-    // console.log(socket.handshake.url);
     console.log("nuevo socket connectado:", socket.id);
 
-    // Send all messages to the client
-    socket.emit("server:loadnotes", notes);
+    socket.emit("listCities", ciudades);
 
-    socket.on("client:newnote", (newNote) => {
-      const note = { ...newNote, id: uuid() };
-      notes.push(note);
-      io.emit("server:newnote", note);
-    });
-
-    socket.on("client:deletenote", (noteId) => {
-      console.log(noteId);
-      notes = notes.filter((note) => note.id !== noteId);
-      io.emit("server:loadnotes", notes);
-    });
-
-    socket.on("client:getnote", (noteId) => {
-      const note = notes.find((note) => note.id === noteId);
-      socket.emit("server:selectednote", note);
-    });
-
-    socket.on("client:updatenote", (updatedNote) => {
-      notes = notes.map((note) => {
-        if (note.id === updatedNote.id) {
-          note.title = updatedNote.title;
-          note.description = updatedNote.description;
-        }
-        return note;
+    socket.on("newPerson", (persona) => {
+      conn.connect(function (err) {
+        if (err) throw err;
+        console.log("Connected!");
+        var sql = `INSERT INTO personas (nombre, telefono, direccion, ciudad) VALUES ("${persona.nombre}", "${persona.telefono}", "${persona.direccion}", "${persona.ciudad}")`;
+        conn.query(sql, function (err, result) {
+          if (err) throw err;
+          socket.emit("newRegisterPerson", "Persona registrada");
+        });
       });
-      io.emit("server:loadnotes", notes);
+    });
+
+    socket.on("searchPerson", (search) => {
+      conn.query(
+        `SELECT * FROM personas WHERE telefono = "${search.telefono}"`,
+        function (err, result, fields) {
+          if (err) throw err;
+          if (result.length > 0)
+            socket.emit("resSearchPerson", "Usuario encontrado");
+          else socket.emit("resSearchPerson", "Usuario no encontrado");
+        }
+      );
     });
 
     socket.on("disconnect", () => {
