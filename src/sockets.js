@@ -23,14 +23,10 @@ export default (io) => {
     socket.emit("listCities", ciudades);
 
     socket.on("newPerson", (persona) => {
-      conn.connect(function (err) {
+      var sql = `INSERT INTO personas (nombre, telefono, direccion, ciudad) VALUES ("${persona.nombre}", "${persona.telefono}", "${persona.direccion}", "${persona.ciudad}")`;
+      conn.query(sql, function (err, result) {
         if (err) throw err;
-        console.log("Connected!");
-        var sql = `INSERT INTO personas (nombre, telefono, direccion, ciudad) VALUES ("${persona.nombre}", "${persona.telefono}", "${persona.direccion}", "${persona.ciudad}")`;
-        conn.query(sql, function (err, result) {
-          if (err) throw err;
-          socket.emit("newRegisterPerson", "Persona registrada");
-        });
+        socket.emit("newRegisterPerson", "Persona registrada");
       });
     });
 
